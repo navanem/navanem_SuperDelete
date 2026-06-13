@@ -1,0 +1,282 @@
+<Window x:Class="SuperDelete.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:SuperDelete.App.Converters"
+        Title="SuperDelete"
+        Height="760" Width="860"
+        MinHeight="600" MinWidth="680"
+        AllowDrop="True"
+        DragOver="Window_DragOver"
+        Drop="Window_Drop"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <conv:StatusToBrushConverter x:Key="StatusToBrush" />
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ============ Header ============ -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <CheckBox DockPanel.Dock="Right"
+                      Content="Dark mode"
+                      VerticalAlignment="Top"
+                      Foreground="{DynamicResource SubtleForegroundBrush}"
+                      IsChecked="{Binding IsDarkMode}" />
+            <StackPanel>
+                <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
+                <TextBlock Style="{StaticResource SubtleText}"
+                           Text="Safely delete files and folders with very long paths (more than 260 characters)." />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- ============ Top content (path, actions, summary, options) ============ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+            <StackPanel>
+
+                <!--Path card-->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="FILE OR FOLDER TO DELETE" Style="{StaticResource LabelText}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     Style="{StaticResource InputBox}"
+                                     Text="{Binding SelectedPath, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="{Binding SelectedPath}" />
+                            <Button Grid.Column="1" Margin="8,0,0,0"
+                                    Style="{StaticResource BaseButton}"
+                                    Content="Browse file…"
+                                    Command="{Binding BrowseFileCommand}" />
+                            <Button Grid.Column="2" Margin="8,0,0,0"
+                                    Style="{StaticResource BaseButton}"
+                                    Content="Browse folder…"
+                                    Command="{Binding BrowseFolderCommand}" />
+                        </Grid>
+                        <TextBlock Style="{StaticResource SubtleText}" Margin="2,8,0,0"
+                                   Text="Paste a path, use Browse, or drag a file/folder anywhere onto this window." />
+
+                        <!-- Recent paths (in-memory, this session) -->
+                        <Grid Margin="0,10,0,0"
+                              Visibility="{Binding RecentPaths.Count, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Recent:" VerticalAlignment="Center"
+                                       Margin="0,0,8,0" Style="{StaticResource SubtleText}" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding RecentPaths}"
+                                      SelectedItem="{Binding SelectedRecentPath}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--Action buttons + live progress-->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Analyze / Preview"
+                                    Style="{StaticResource BaseButton}"
+                                    Command="{Binding AnalyzeCommand}" />
+                            <Button Content="Delete" Margin="10,0,0,0"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding DeleteCommand}" />
+                            <Button Content="Cancel" Margin="10,0,0,0"
+                                    Style="{StaticResource BaseButton}"
+                                    Command="{Binding CancelCommand}"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+
+                        <!-- Live progress -->
+                        <StackPanel Margin="0,12,0,0"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                            <ProgressBar IsIndeterminate="True" Height="4" Background="Transparent"
+                                         BorderThickness="0" Foreground="{DynamicResource AccentBrush}" />
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding CurrentActivity}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource SubtleForegroundBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding ProgressSummary}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ForegroundBrush}" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!--Summary card (after Analyze)-->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12"
+                        Visibility="{Binding HasAnalysis, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Summary" Style="{StaticResource SectionTitle}" Margin="0,0,0,10" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Type" Style="{StaticResource SubtleText}" Margin="0,3" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SummaryType}" Margin="0,3" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Exists" Style="{StaticResource SubtleText}" Margin="0,3" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SummaryExists}" Margin="0,3" />
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Path length" Style="{StaticResource SubtleText}" Margin="0,3" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SummaryPathLength}" Margin="0,3" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Contents" Style="{StaticResource SubtleText}" Margin="0,3" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SummaryItems}" Margin="0,3" />
+                        </Grid>
+
+                        <!-- Access issue note -->
+                        <Border Margin="0,10,0,0" CornerRadius="8" Padding="10"
+                                Background="{DynamicResource WarningBackgroundBrush}"
+                                Visibility="{Binding HasAccessIssues, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{Binding AccessIssueDetail}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource WarningBrush}" />
+                        </Border>
+
+                        <!-- Recursive deletion warning -->
+                        <Border Margin="0,10,0,0" CornerRadius="8" Padding="10"
+                                Background="{DynamicResource ErrorBackgroundBrush}"
+                                Visibility="{Binding ShowRecursiveWarning, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚠" FontSize="16" Margin="0,0,8,0"
+                                           Foreground="{DynamicResource DangerBrush}" />
+                                <TextBlock Text="{Binding RecursiveWarningText}" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource DangerBrush}"
+                                           MaxWidth="560" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!--Advanced options-->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <Expander IsExpanded="False" Foreground="{DynamicResource ForegroundBrush}">
+                            <Expander.Header>
+                                <TextBlock Text="Advanced options" Style="{StaticResource SectionTitle}" />
+                            </Expander.Header>
+                            <StackPanel Margin="0,10,0,0">
+                                <CheckBox Style="{StaticResource OptionCheck}"
+                                          IsChecked="{Binding PreviewOnly}"
+                                          Content="Preview only — count what would be deleted, change nothing (dry run)" />
+                                <CheckBox Style="{StaticResource OptionCheck}"
+                                          IsChecked="{Binding BypassAcl}"
+                                          Content="Bypass ACL — delete even without permissions (requires administrator)" />
+                                <CheckBox Style="{StaticResource OptionCheck}"
+                                          IsChecked="{Binding ShowDiagnostics}"
+                                          Content="Show diagnostic details (stack traces) when something fails" />
+
+                                <!-- Bypass ACL active indicator -->
+                                <Border Margin="0,10,0,0" CornerRadius="8" Padding="10,6"
+                                        HorizontalAlignment="Left"
+                                        Background="{DynamicResource WarningBackgroundBrush}"
+                                        Visibility="{Binding ShowBypassAclWarning, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Bypass ACL is enabled — run SuperDelete as administrator."
+                                               Foreground="{DynamicResource WarningBrush}" FontWeight="SemiBold" />
+                                </Border>
+
+                                <TextBlock Style="{StaticResource SubtleText}" Margin="0,12,0,0"
+                                           Text="About long paths: Windows normally blocks paths longer than 260 characters. SuperDelete uses extended-length (\\?\) APIs and the Unicode Win32 functions to enumerate and remove them reliably." />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ============ Activity log ============ -->
+        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <TextBlock Text="Activity log" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                    <Button Content="Clear" HorizontalAlignment="Right"
+                            Style="{StaticResource BaseButton}" Padding="10,4"
+                            Command="{Binding ClearLogCommand}" />
+                </Grid>
+
+                <Border Grid.Row="1" CornerRadius="8" BorderThickness="1"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        Background="{DynamicResource InputBackgroundBrush}">
+                    <TextBox x:Name="LogBox"
+                             Text="{Binding Log, Mode=OneWay}"
+                             IsReadOnly="True"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{DynamicResource ForegroundBrush}"
+                             FontFamily="Consolas, Cascadia Mono, Courier New"
+                             FontSize="12"
+                             Padding="10"
+                             TextWrapping="NoWrap"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"
+                             TextChanged="LogBox_TextChanged" />
+                </Border>
+
+                <!-- Collapsible technical details -->
+                <Expander Grid.Row="2" Margin="0,10,0,0"
+                          IsExpanded="{Binding ShowDiagnostics}"
+                          Foreground="{DynamicResource SubtleForegroundBrush}"
+                          Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}">
+                    <Expander.Header>
+                        <TextBlock Text="Technical details" Style="{StaticResource SubtleText}" />
+                    </Expander.Header>
+                    <Border CornerRadius="8" Margin="0,8,0,0" Padding="10"
+                            Background="{DynamicResource InputBackgroundBrush}"
+                            BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                        <TextBox Text="{Binding DiagnosticDetails, Mode=OneWay}"
+                                 IsReadOnly="True" Background="Transparent" BorderThickness="0"
+                                 Foreground="{DynamicResource SubtleForegroundBrush}"
+                                 FontFamily="Consolas, Cascadia Mono, Courier New" FontSize="11"
+                                 TextWrapping="Wrap" MaxHeight="160"
+                                 VerticalScrollBarVisibility="Auto" />
+                    </Border>
+                </Expander>
+            </Grid>
+        </Border>
+
+        <!-- ============ Status bar ============ -->
+        <Border Grid.Row="3" CornerRadius="8" Padding="12,8"
+                Background="{Binding Status, Converter={StaticResource StatusToBrush}, ConverterParameter=background}">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0"
+                         Fill="{Binding Status, Converter={StaticResource StatusToBrush}, ConverterParameter=foreground}" />
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" FontWeight="SemiBold"
+                           Foreground="{DynamicResource ForegroundBrush}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

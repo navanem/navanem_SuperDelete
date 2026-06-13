@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Light theme palette. Every key here is mirrored in Dark.xaml so the UI can switch at
+         runtime simply by swapping this dictionary. -->
+
+    <Color x:Key="WindowBackgroundColor">#FFF4F5F7</Color>
+    <Color x:Key="CardBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="InputBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="ForegroundColor">#FF1B1F24</Color>
+    <Color x:Key="SubtleForegroundColor">#FF5A6472</Color>
+    <Color x:Key="BorderColor">#FFD6DBE1</Color>
+    <Color x:Key="AccentColor">#FF2563EB</Color>
+    <Color x:Key="AccentForegroundColor">#FFFFFFFF</Color>
+    <Color x:Key="DangerColor">#FFD92D20</Color>
+    <Color x:Key="DangerForegroundColor">#FFFFFFFF</Color>
+    <Color x:Key="WarningColor">#FFB54708</Color>
+    <Color x:Key="WarningBackgroundColor">#FFFEF6E7</Color>
+    <Color x:Key="SuccessColor">#FF067647</Color>
+    <Color x:Key="SuccessBackgroundColor">#FFE9F6EF</Color>
+    <Color x:Key="ErrorBackgroundColor">#FFFDECEA</Color>
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}" />
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
+    <SolidColorBrush x:Key="SubtleForegroundBrush" Color="{StaticResource SubtleForegroundColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentForegroundBrush" Color="{StaticResource AccentForegroundColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="DangerForegroundBrush" Color="{StaticResource DangerForegroundColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="WarningBackgroundBrush" Color="{StaticResource WarningBackgroundColor}" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="{StaticResource SuccessBackgroundColor}" />
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="{StaticResource ErrorBackgroundColor}" />
+
+</ResourceDictionary>
