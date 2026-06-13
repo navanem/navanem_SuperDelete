@@ -241,3 +241,6 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+# Publish output (release artifacts)
+/dist/
+
