@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:SuperDelete.App.Converters"
         Title="SuperDelete"
+        Icon="superdelete.ico"
         Height="760" Width="860"
         MinHeight="600" MinWidth="680"
         AllowDrop="True"
@@ -16,6 +17,18 @@
         <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
         <conv:StatusToBrushConverter x:Key="StatusToBrush" />
     </Window.Resources>
+
+    <DockPanel>
+
+        <!-- Menu bar -->
+        <Menu DockPanel.Dock="Top"
+              Background="{DynamicResource CardBackgroundBrush}"
+              Foreground="{DynamicResource ForegroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About SuperDelete…" Command="{Binding AboutCommand}" />
+            </MenuItem>
+        </Menu>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -33,7 +46,11 @@
                       Foreground="{DynamicResource SubtleForegroundBrush}"
                       IsChecked="{Binding IsDarkMode}" />
             <StackPanel>
-                <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
+                    <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" Margin="8,4,0,0"
+                               Foreground="{DynamicResource SubtleForegroundBrush}" FontSize="12" />
+                </StackPanel>
                 <TextBlock Style="{StaticResource SubtleText}"
                            Text="Safely delete files and folders with very long paths (more than 260 characters)." />
             </StackPanel>
@@ -279,4 +296,6 @@
             </StackPanel>
         </Border>
     </Grid>
+
+    </DockPanel>
 </Window>

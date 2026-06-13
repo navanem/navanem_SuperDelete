@@ -9,6 +9,7 @@
     <!-- Keep the historical executable name: SuperDelete.exe -->
     <AssemblyName>SuperDelete</AssemblyName>
     <Version>2.0.0</Version>
+    <ApplicationIcon>..\..\assets\superdelete.ico</ApplicationIcon>
     <Description>SuperDelete command-line tool for deleting files/folders with very long paths.</Description>
   </PropertyGroup>
 

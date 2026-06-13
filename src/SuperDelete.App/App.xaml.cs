@@ -14,6 +14,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Threading;
 using SuperDelete.App.Services;
 using SuperDelete.App.ViewModels;
 using SuperDelete.Core.Services;
@@ -26,6 +27,9 @@ namespace SuperDelete.App
         {
             base.OnStartup(e);
 
+            // Never fail silently: surface an unhandled UI-thread exception to the user.
+            DispatcherUnhandledException += OnDispatcherUnhandledException;
+
             // Compose the object graph by hand (no DI container needed for an app this size).
             var dialogService = new DialogService();
             var viewModel = new MainViewModel(
@@ -37,6 +41,16 @@ namespace SuperDelete.App
             var window = new MainWindow { DataContext = viewModel };
             MainWindow = window;
             window.Show();
+        }
+
+        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(
+                e.Exception.Message,
+                "SuperDelete — unexpected error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            e.Handled = true;
         }
 
         /// <summary>

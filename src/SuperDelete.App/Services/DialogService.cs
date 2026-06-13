@@ -57,5 +57,11 @@ namespace SuperDelete.App.Services
 
             return result == MessageBoxResult.Yes;
         }
+
+        public void ShowAbout()
+        {
+            var about = new AboutWindow { Owner = Application.Current.MainWindow };
+            about.ShowDialog();
+        }
     }
 }

@@ -10,11 +10,17 @@
     <AssemblyName>SuperDelete.App</AssemblyName>
     <Version>2.0.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\superdelete.ico</ApplicationIcon>
     <Description>SuperDelete desktop UI for safely deleting files/folders with very long paths.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SuperDelete.Core\SuperDelete.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The window/taskbar icon, shared from the repo-level assets folder. -->
+    <Resource Include="..\..\assets\superdelete.ico" Link="superdelete.ico" />
   </ItemGroup>
 
 </Project>

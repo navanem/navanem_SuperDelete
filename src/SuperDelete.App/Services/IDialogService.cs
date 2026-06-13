@@ -28,5 +28,8 @@ namespace SuperDelete.App.Services
 
         /// <summary>Shows a modal, danger-styled confirmation. Returns true if the user confirms.</summary>
         bool ConfirmDeletion(string title, string message);
+
+        /// <summary>Shows the modal About dialog (version, website, license).</summary>
+        void ShowAbout();
     }
 }

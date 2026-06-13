@@ -63,6 +63,7 @@ namespace SuperDelete.App.ViewModels
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, CanOperate);
             CancelCommand = new RelayCommand(Cancel, () => IsBusy);
             ClearLogCommand = new RelayCommand(() => { Log = string.Empty; }, () => Log.Length > 0);
+            AboutCommand = new RelayCommand(() => _dialogService.ShowAbout());
 
             _sampleTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
             _sampleTimer.Tick += (_, _) => SampleLiveProgress();
@@ -77,6 +78,10 @@ namespace SuperDelete.App.ViewModels
         public AsyncRelayCommand DeleteCommand { get; }
         public RelayCommand CancelCommand { get; }
         public RelayCommand ClearLogCommand { get; }
+        public RelayCommand AboutCommand { get; }
+
+        /// <summary>App version shown in the header (e.g. "v2.0.0").</summary>
+        public string AppVersion => "v" + AboutWindow.GetVersion();
 
         // ===== Inputs =====
         private string _selectedPath = string.Empty;
@@ -284,7 +289,9 @@ namespace SuperDelete.App.ViewModels
         public bool ShowBypassAclWarning => BypassAcl;
 
         // ===== Command implementations =====
-        private bool CanOperate() => !IsBusy && !string.IsNullOrWhiteSpace(SelectedPath);
+        // Buttons stay clickable whenever we're idle; an empty path is handled with a friendly inline
+        // message (see AnalyzeAsync / DeleteAsync) rather than a greyed-out, "dead-looking" button.
+        private bool CanOperate() => !IsBusy;
 
         private void RaiseCommandStates()
         {
@@ -309,7 +316,11 @@ namespace SuperDelete.App.ViewModels
 
         private async Task AnalyzeAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedPath)) return;
+            if (string.IsNullOrWhiteSpace(SelectedPath))
+            {
+                SetStatus(StatusKind.Warning, "Select a file or folder first (browse, paste, or drag one in).");
+                return;
+            }
 
             BeginOperation();
             SetStatus(StatusKind.Info, "Analyzing…");
@@ -355,7 +366,11 @@ namespace SuperDelete.App.ViewModels
 
         private async Task DeleteAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedPath)) return;
+            if (string.IsNullOrWhiteSpace(SelectedPath))
+            {
+                SetStatus(StatusKind.Warning, "Select a file or folder first (browse, paste, or drag one in).");
+                return;
+            }
 
             var options = new DeletionOptions { BypassAcl = BypassAcl, PreviewOnly = PreviewOnly };
 

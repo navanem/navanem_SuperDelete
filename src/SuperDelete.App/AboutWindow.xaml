@@ -1,0 +1,41 @@
+<Window x:Class="SuperDelete.App.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About SuperDelete"
+        Icon="superdelete.ico"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+    <Border Style="{StaticResource Card}" Margin="16" Width="380">
+        <StackPanel>
+            <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
+            <TextBlock x:Name="VersionText" Style="{StaticResource SubtleText}" Margin="0,2,0,0" />
+
+            <TextBlock Style="{StaticResource SubtleText}" Margin="0,14,0,0"
+                       Text="Safely delete files and folders with very long paths (more than 260 characters), from the command line or this desktop app." />
+
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                <TextBlock Text="Website: " VerticalAlignment="Center"
+                           Foreground="{DynamicResource SubtleForegroundBrush}" />
+                <TextBlock VerticalAlignment="Center">
+                    <Hyperlink x:Name="SiteLink"
+                               NavigateUri="https://www.navanem.com"
+                               RequestNavigate="OnNavigate"
+                               Foreground="{DynamicResource AccentBrush}">
+                        www.navanem.com
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource SubtleText}" Margin="0,14,0,0"
+                       Text="Licensed under the Apache License 2.0." />
+
+            <Button Content="Close" HorizontalAlignment="Right" Margin="0,18,0,0"
+                    Style="{StaticResource PrimaryButton}" IsCancel="True" Click="OnClose" />
+        </StackPanel>
+    </Border>
+</Window>
