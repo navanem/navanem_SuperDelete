@@ -12,8 +12,10 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 using SuperDelete.App.ViewModels;
 
 namespace SuperDelete.App
@@ -23,6 +25,13 @@ namespace SuperDelete.App
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        // Opens the navanem.com link in the header in the default browser.
+        private void OnNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
 
         // ----- Drag & drop a file/folder anywhere onto the window -----

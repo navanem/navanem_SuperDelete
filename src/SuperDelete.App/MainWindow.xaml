@@ -4,8 +4,8 @@
         xmlns:conv="clr-namespace:SuperDelete.App.Converters"
         Title="SuperDelete"
         Icon="superdelete.ico"
-        Height="760" Width="860"
-        MinHeight="600" MinWidth="680"
+        Height="820" Width="860"
+        MinHeight="640" MinWidth="680"
         AllowDrop="True"
         DragOver="Window_DragOver"
         Drop="Window_Drop"
@@ -33,8 +33,10 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <!-- Top content scrolls within its share; the log fills the rest; the status bar stays
+                 pinned and visible (it was being pushed off-screen when row 1 was Auto). -->
+            <RowDefinition Height="2*" MinHeight="180" />
+            <RowDefinition Height="1*" MinHeight="120" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -45,14 +47,25 @@
                       VerticalAlignment="Top"
                       Foreground="{DynamicResource SubtleForegroundBrush}"
                       IsChecked="{Binding IsDarkMode}" />
-            <StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
-                    <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" Margin="8,4,0,0"
-                               Foreground="{DynamicResource SubtleForegroundBrush}" FontSize="12" />
+            <StackPanel Orientation="Horizontal">
+                <Image Source="superdelete.ico" Width="46" Height="46"
+                       VerticalAlignment="Center" Margin="0,0,14,0"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="SuperDelete" Style="{StaticResource HeadingText}" />
+                        <TextBlock VerticalAlignment="Bottom" Margin="8,0,0,3" FontSize="12">
+                            <Hyperlink NavigateUri="https://www.navanem.com"
+                                       RequestNavigate="OnNavigate"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       TextDecorations="None">by navanem.com</Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock Text="{Binding AppVersion}" FontSize="12" Margin="0,1,0,0"
+                               Foreground="{DynamicResource SubtleForegroundBrush}" />
+                    <TextBlock Style="{StaticResource SubtleText}" Margin="0,2,0,0"
+                               Text="Safely delete files and folders with very long paths (more than 260 characters)." />
                 </StackPanel>
-                <TextBlock Style="{StaticResource SubtleText}"
-                           Text="Safely delete files and folders with very long paths (more than 260 characters)." />
             </StackPanel>
         </DockPanel>
 
@@ -121,7 +134,10 @@
                         <!-- Live progress -->
                         <StackPanel Margin="0,12,0,0"
                                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
-                            <ProgressBar IsIndeterminate="True" Height="4" Background="Transparent"
+                            <ProgressBar Height="6" Minimum="0" Maximum="100"
+                                         IsIndeterminate="{Binding ProgressIsIndeterminate}"
+                                         Value="{Binding ProgressPercent, Mode=OneWay}"
+                                         Background="{DynamicResource InputBackgroundBrush}"
                                          BorderThickness="0" Foreground="{DynamicResource AccentBrush}" />
                             <Grid Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
@@ -131,7 +147,7 @@
                                 <TextBlock Grid.Column="0" Text="{Binding CurrentActivity}"
                                            TextTrimming="CharacterEllipsis"
                                            Foreground="{DynamicResource SubtleForegroundBrush}" />
-                                <TextBlock Grid.Column="1" Text="{Binding ProgressSummary}"
+                                <TextBlock Grid.Column="1" Text="{Binding ProgressText}"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource ForegroundBrush}" />
                             </Grid>

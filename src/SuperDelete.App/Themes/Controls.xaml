@@ -117,6 +117,17 @@
         </Setter>
     </Style>
 
+    <!-- ===== Menu (theme-aware so the dropdown is readable in dark mode) ===== -->
+    <Style TargetType="Menu">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}" />
+    </Style>
+
     <!-- ===== CheckBox ===== -->
     <Style x:Key="OptionCheck" TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />

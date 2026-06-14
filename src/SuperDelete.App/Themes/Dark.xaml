@@ -16,7 +16,7 @@
     <Color x:Key="WarningColor">#FFF5B544</Color>
     <Color x:Key="WarningBackgroundColor">#FF3A2F18</Color>
     <Color x:Key="SuccessColor">#FF4ED98A</Color>
-    <Color x:Key="SuccessBackgroundColor">#FF18302440</Color>
+    <Color x:Key="SuccessBackgroundColor">#FF14301F</Color>
     <Color x:Key="ErrorBackgroundColor">#FF3A1F1D</Color>
 
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />

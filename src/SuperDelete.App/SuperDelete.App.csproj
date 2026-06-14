@@ -9,7 +9,7 @@
     <RootNamespace>SuperDelete.App</RootNamespace>
     <!-- Output file name. The CLI keeps the historical SuperDelete.exe; the GUI is SuperDeleteUI.exe. -->
     <AssemblyName>SuperDeleteUI</AssemblyName>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\..\assets\superdelete.ico</ApplicationIcon>
     <Description>SuperDelete desktop UI for safely deleting files/folders with very long paths.</Description>

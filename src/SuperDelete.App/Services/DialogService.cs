@@ -63,5 +63,25 @@ namespace SuperDelete.App.Services
             var about = new AboutWindow { Owner = Application.Current.MainWindow };
             about.ShowDialog();
         }
+
+        public ElevationPrompt PromptForElevation()
+        {
+            var result = MessageBox.Show(
+                "Bypass ACL needs administrator rights, but SuperDelete is not running as administrator.\n\n" +
+                "• Yes — relaunch SuperDelete as administrator\n" +
+                "• No — continue anyway (protected items will likely fail)\n" +
+                "• Cancel — stop",
+                "Administrator rights required",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning,
+                MessageBoxResult.Yes);
+
+            return result switch
+            {
+                MessageBoxResult.Yes => ElevationPrompt.Relaunch,
+                MessageBoxResult.No => ElevationPrompt.ContinueAnyway,
+                _ => ElevationPrompt.Cancel
+            };
+        }
     }
 }

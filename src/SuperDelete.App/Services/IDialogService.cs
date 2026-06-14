@@ -14,6 +14,19 @@
 
 namespace SuperDelete.App.Services
 {
+    /// <summary>The user's choice when Bypass ACL is requested without administrator rights.</summary>
+    public enum ElevationPrompt
+    {
+        /// <summary>Relaunch the app as administrator.</summary>
+        Relaunch,
+
+        /// <summary>Proceed without elevation (the delete will likely fail on protected items).</summary>
+        ContinueAnyway,
+
+        /// <summary>Abort the operation.</summary>
+        Cancel
+    }
+
     /// <summary>
     /// Abstracts the windowing/dialog interactions the view model needs, keeping the view model free
     /// of direct WPF dialog dependencies (and testable).
@@ -31,5 +44,10 @@ namespace SuperDelete.App.Services
 
         /// <summary>Shows the modal About dialog (version, website, license).</summary>
         void ShowAbout();
+
+        /// <summary>
+        /// Asks how to proceed when Bypass ACL is enabled but the app is not running as administrator.
+        /// </summary>
+        ElevationPrompt PromptForElevation();
     }
 }

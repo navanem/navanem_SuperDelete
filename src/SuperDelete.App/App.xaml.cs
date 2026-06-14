@@ -31,11 +31,12 @@ namespace SuperDelete.App
             DispatcherUnhandledException += OnDispatcherUnhandledException;
 
             // Compose the object graph by hand (no DI container needed for an app this size).
-            var dialogService = new DialogService();
             var viewModel = new MainViewModel(
                 new DeletionService(),
                 new PathAnalyzer(),
-                dialogService,
+                new DialogService(),
+                new JsonSettingsStore(),
+                new ElevationService(),
                 ApplyTheme);
 
             var window = new MainWindow { DataContext = viewModel };
@@ -58,9 +59,12 @@ namespace SuperDelete.App
         /// </summary>
         public void ApplyTheme(bool dark)
         {
-            var dictionaries = Resources.MergedDictionaries;
-            var source = new Uri(dark ? "Themes/Dark.xaml" : "Themes/Light.xaml", UriKind.Relative);
-            dictionaries[0] = new ResourceDictionary { Source = source };
+            // Use an absolute pack URI: a code-created ResourceDictionary has no base URI, so a
+            // relative "Themes/Dark.xaml" cannot be resolved and would throw.
+            var source = new Uri(
+                dark ? "pack://application:,,,/Themes/Dark.xaml" : "pack://application:,,,/Themes/Light.xaml",
+                UriKind.Absolute);
+            Resources.MergedDictionaries[0] = new ResourceDictionary { Source = source };
         }
     }
 }

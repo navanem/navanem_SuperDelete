@@ -13,6 +13,7 @@
 //limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading;
@@ -36,6 +37,8 @@ namespace SuperDelete.App.ViewModels
         private readonly IDeletionService _deletionService;
         private readonly IPathAnalyzer _analyzer;
         private readonly IDialogService _dialogService;
+        private readonly ISettingsStore _settingsStore;
+        private readonly IElevationService _elevation;
         private readonly Action<bool> _applyTheme;
 
         // Live counters written by the worker thread, sampled by a UI timer (see DelegateProgress).
@@ -45,16 +48,22 @@ namespace SuperDelete.App.ViewModels
         private volatile string _liveActivity = string.Empty;
 
         private CancellationTokenSource? _cts;
+        private bool _suppressSave;
+        private int _totalForProgress;
 
         public MainViewModel(
             IDeletionService deletionService,
             IPathAnalyzer analyzer,
             IDialogService dialogService,
+            ISettingsStore settingsStore,
+            IElevationService elevation,
             Action<bool> applyTheme)
         {
             _deletionService = deletionService;
             _analyzer = analyzer;
             _dialogService = dialogService;
+            _settingsStore = settingsStore;
+            _elevation = elevation;
             _applyTheme = applyTheme;
 
             BrowseFileCommand = new RelayCommand(BrowseFile, () => !IsBusy);
@@ -68,7 +77,41 @@ namespace SuperDelete.App.ViewModels
             _sampleTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
             _sampleTimer.Tick += (_, _) => SampleLiveProgress();
 
+            LoadSettings();
+
             AppendLog("Ready. Select or drop a file/folder, then Analyze or Delete.");
+        }
+
+        private void LoadSettings()
+        {
+            _suppressSave = true;
+            try
+            {
+                var settings = _settingsStore.Load();
+                foreach (var p in settings.RecentPaths)
+                {
+                    RecentPaths.Add(p);
+                }
+                IsDarkMode = settings.DarkMode;   // also applies the theme
+            }
+            finally
+            {
+                _suppressSave = false;
+            }
+        }
+
+        private void SaveSettings()
+        {
+            if (_suppressSave)
+            {
+                return;
+            }
+
+            _settingsStore.Save(new AppSettings
+            {
+                DarkMode = IsDarkMode,
+                RecentPaths = new List<string>(RecentPaths)
+            });
         }
 
         // ===== Commands =====
@@ -135,6 +178,10 @@ namespace SuperDelete.App.ViewModels
                 if (SetProperty(ref _isDarkMode, value))
                 {
                     _applyTheme(value);
+                    SaveSettings();
+                    // The status banner colours come from a converter that reads theme resources, so
+                    // force those bindings to re-evaluate now that the active theme has changed.
+                    OnPropertyChanged(nameof(Status));
                 }
             }
         }
@@ -187,6 +234,21 @@ namespace SuperDelete.App.ViewModels
         }
 
         public string ProgressSummary => $"{FilesProcessed} files · {FoldersProcessed} folders";
+
+        private double _progressPercent;
+        /// <summary>0–100 completion, meaningful only when <see cref="ProgressIsIndeterminate"/> is false.</summary>
+        public double ProgressPercent
+        {
+            get => _progressPercent;
+            private set { if (SetProperty(ref _progressPercent, value)) OnPropertyChanged(nameof(ProgressText)); }
+        }
+
+        /// <summary>True when we have no reliable total (no prior Analyze), so the bar animates instead.</summary>
+        public bool ProgressIsIndeterminate => _totalForProgress <= 0;
+
+        public string ProgressText => ProgressIsIndeterminate
+            ? ProgressSummary
+            : $"{ProgressSummary}  ({ProgressPercent:0}%)";
 
         private string _currentActivity = string.Empty;
         public string CurrentActivity
@@ -374,6 +436,24 @@ namespace SuperDelete.App.ViewModels
 
             var options = new DeletionOptions { BypassAcl = BypassAcl, PreviewOnly = PreviewOnly };
 
+            // Bypass ACL needs administrator rights. If we are not elevated, offer to relaunch.
+            if (options.BypassAcl && !PreviewOnly && !_elevation.IsElevated)
+            {
+                switch (_dialogService.PromptForElevation())
+                {
+                    case ElevationPrompt.Relaunch:
+                        if (_elevation.RelaunchAsAdmin()) return;   // the app is shutting down
+                        SetStatus(StatusKind.Warning, "Could not relaunch as administrator.");
+                        AppendLog("Could not relaunch as administrator (UAC declined or failed).");
+                        return;
+                    case ElevationPrompt.Cancel:
+                        AppendLog("Deletion cancelled (administrator rights required for Bypass ACL).");
+                        return;
+                    case ElevationPrompt.ContinueAnyway:
+                        break;
+                }
+            }
+
             // A real deletion always asks for explicit confirmation. A preview makes no changes, so it
             // runs straight away.
             if (!PreviewOnly)
@@ -398,6 +478,11 @@ namespace SuperDelete.App.ViewModels
             BeginOperation();
             DiagnosticDetails = null;
             ResetLiveCounters();
+
+            // If a prior Analyze gave us a total, show a real percentage; otherwise the bar animates.
+            _totalForProgress = (HasAnalysis && Analysis!.Exists) ? Analysis.TotalItems : 0;
+            OnPropertyChanged(nameof(ProgressIsIndeterminate));
+            OnPropertyChanged(nameof(ProgressText));
             _sampleTimer.Start();
 
             SetStatus(StatusKind.Info, PreviewOnly ? "Previewing (no changes will be made)…" : "Deleting…");
@@ -490,6 +575,10 @@ namespace SuperDelete.App.ViewModels
         {
             FilesProcessed = _liveFiles;
             FoldersProcessed = _liveFolders;
+            if (_totalForProgress > 0)
+            {
+                ProgressPercent = Math.Min(100.0, (_liveFiles + _liveFolders) * 100.0 / _totalForProgress);
+            }
             var activity = _liveActivity;
             if (activity.Length > 0)
             {
@@ -504,6 +593,7 @@ namespace SuperDelete.App.ViewModels
             _liveActivity = string.Empty;
             FilesProcessed = 0;
             FoldersProcessed = 0;
+            ProgressPercent = 0;
             CurrentActivity = string.Empty;
         }
 
@@ -537,6 +627,7 @@ namespace SuperDelete.App.ViewModels
             {
                 RecentPaths.RemoveAt(RecentPaths.Count - 1);
             }
+            SaveSettings();
         }
 
         private void AppendLog(string line)
